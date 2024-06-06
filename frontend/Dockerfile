@@ -1,52 +1,32 @@
-# Use the official Node.js 20 image as the base image
-FROM node:20
+# Stage 1: Build the application
+FROM node:20 AS builder
 
 # Set the working directory
 WORKDIR /app
 
-# Copy the package.json and package-lock.json (or yarn.lock) to the working directory
+# Copy the package.json and package-lock.json (or yarn.lock)
 COPY frontend/package*.json ./
 
-# Install the project dependencies
+# Install dependencies
 RUN npm install
 
-# Copy the rest of the application files to the working directory
+# Copy the application source code
 COPY frontend/ ./
 
 # Build the application
 RUN npm run build
 
-# Install a simple web server to serve the built files
-RUN npm install -g serve
+# Stage 2: Serve the application with Nginx
+FROM nginx:alpine
 
-# Set the command to serve the built files
-CMD ["serve", "-s", "dist"]
+# Copy the built application from the previous stage
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Expose port 5000 for the web server
-EXPOSE 5000
-# Use the official Node.js 20 image as the base image
-FROM node:20
+# Copy custom Nginx configuration if you have one
+# COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
-# Set the working directory
-WORKDIR /app
+# Expose port 80
+EXPOSE 80
 
-# Copy the package.json and package-lock.json (or yarn.lock) to the working directory
-COPY frontend/package*.json ./
-
-# Install the project dependencies
-RUN npm install
-
-# Copy the rest of the application files to the working directory
-COPY frontend/ ./
-
-# Build the application
-RUN npm run build
-
-# Install a simple web server to serve the built files
-RUN npm install -g serve
-
-# Set the command to serve the built files
-CMD ["serve", "-s", "dist"]
-
-# Expose port 5000 for the web server
-EXPOSE 5000
+# Start Nginx server
+CMD ["nginx", "-g", "daemon off;"]
