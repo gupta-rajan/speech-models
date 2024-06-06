@@ -1,32 +1,29 @@
 # Stage 1: Build the application
-FROM node:20.0-alpine as builder
-
-# Install pnpm globally
-RUN npm install -g pnpm
+FROM node:16-alpine AS build
 
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and pnpm-lock.yaml to leverage Docker cache
-COPY package.json pnpm-lock.yaml ./
+# Copy package.json and package-lock.json (or yarn.lock) to the working directory
+COPY package*.json ./
 
 # Install dependencies
-RUN pnpm install
+RUN npm install
 
-# Copy the rest of the application code
+# Copy the rest of the application files
 COPY . .
 
-# Build the application
+# Build the React application
 RUN npm run build
 
 # Stage 2: Serve the application
-FROM nginxinc/nginx-unprivileged:stable-alpine-slim
+FROM nginx:stable-alpine
 
-# Copy built files from builder stage
-COPY --from=builder /app/build /usr/share/nginx/html
+# Copy the build output to Nginx's HTML directory
+COPY --from=build /app/build /usr/share/nginx/html
 
-# Expose port
-EXPOSE 8000
+# Expose port 80
+EXPOSE 80
 
 # Start Nginx server
 CMD ["nginx", "-g", "daemon off;"]
