@@ -16,17 +16,20 @@ COPY frontend/ ./
 # Build the application
 RUN npm run build
 
-# Stage 2: Serve the application with Nginx
-FROM nginx:alpine
+# Stage 2: Serve the application with an HTTP server
+FROM node:20 AS server
+
+# Install 'serve' globally
+RUN npm install -g serve
 
 # Copy the built application from the previous stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/build /app/build
 
-# Copy custom Nginx configuration if you have one
-# COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+# Set the working directory
+WORKDIR /app
 
-# Expose port 80
-EXPOSE 80
+# Expose port 3000
+EXPOSE 3000
 
-# Start Nginx server
-CMD ["nginx", "-g", "daemon off;"]
+# Serve the application
+CMD ["serve", "-s", "build", "-l", "3000"]
