@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { uploadFile } from '../api'; // Adjust the path if necessary
 
 const FileUpload = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -18,18 +18,10 @@ const FileUpload = () => {
     }
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('audio', selectedFile);
-      
-      const response = await axios.post('http://127.0.0.1:8000/speech/upload/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      
-      setUploadedFile(response.data.message);
+      const response = await uploadFile(selectedFile);
+      setUploadedFile(response.message);
     } catch (error) {
-      console.error('Error uploading file: ', error);
+      console.error('Error uploading file:', error);
       setUploadedFile('error');
     } finally {
       setIsUploading(false);
