@@ -1,7 +1,7 @@
 // api.js (located in the root directory)
 import axios from "axios";
 
-const apiUrl = "http://10.195.250.59:8000";
+const apiUrl = "https://10.195.250.59:8000";
 
 const api = axios.create({
   baseURL: apiUrl,
